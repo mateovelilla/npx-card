@@ -7,7 +7,6 @@ const boxen = require('boxen');
 const clear = require('clear');
 const Jimp = require("jimp");
 const chalk = require('chalk');
-<<<<<<< HEAD
 const player = require('play-sound')();
 const MARGIN_AND_PADDING = 12;
 const COLUMNS = (process.stdout.columns - MARGIN_AND_PADDING) % 2 === 0 ? 
@@ -20,19 +19,6 @@ const chars = [" ", " ", ".", ":", "!", "+", "*", "e", "$", "@", "8"];
 const color = true;
 const join = "";
 const RATE = 30;
-=======
-const MARGIN_AND_PADDING = 12;
-const COLUMNS = (process.stdout.columns - MARGIN_AND_PADDING) % 2 === 0 ? 
-  process.stdout.columns - MARGIN_AND_PADDING :
-  process.stdout.columns - MARGIN_AND_PADDING + 1,
-ROWS = (process.stdout.rows - MARGIN_AND_PADDING) % 2 === 0 ?
-  process.stdout.rows - MARGIN_AND_PADDING :
-  process.stdout.rows - MARGIN_AND_PADDING + 1;
-const chars = [" ", " ", ".", ":", "!", "+", "*", "e", "$", "@", "8"];
-const color = true;
-const join = "";
-const RATE = 30
->>>>>>> 35f30910f24ccfda556657e074f8bd81ec83a7d3
 clear();
 
 const data = {
@@ -53,22 +39,15 @@ const data = {
               chalk.keyword("pink")("CSS ") +
               chalk.yellow("AWS ") +
               chalk.red("Pentesting"),
-<<<<<<< HEAD
   lofiMusic: "https://www.chosic.com/download-audio/24220/",
-=======
->>>>>>> 35f30910f24ccfda556657e074f8bd81ec83a7d3
   labelWork: chalk.white.bold('        Work:'),
   labelTwitter: chalk.white.bold('        Twitter:'),
   labelGitHub: chalk.white.bold('        GitHub:'),
   labelLinkedIn: chalk.white.bold('        LinkedIn:'),
   labelWeb: chalk.white.bold('        Web:'),
   labelCard: chalk.white.bold('        Card:'),
-<<<<<<< HEAD
   labelInterests: chalk.white('        Interest:'),
   labelLofiMusic: "       🎵🎵🎵 Lofi Music:"
-=======
-  labelInterests: chalk.white('        Interest:')
->>>>>>> 35f30910f24ccfda556657e074f8bd81ec83a7d3
 };
 let contentCard = [
   `${data.name}`,
@@ -91,28 +70,7 @@ let contentCard = [
   `${chalk.bold("please wait for the animation, meanwhile listen to this song")}`
 ];
 const me = boxen(
-<<<<<<< HEAD
   contentCard.join('\n') + '\n'.repeat(ROWS - 15 ),
-=======
-  [
-    `${data.name}`,
-    ``,
-    `${data.labelWork}  ${data.work}`,
-    ``,
-    `${data.labelTwitter}  ${data.twitter}`,
-    `${data.labelGitHub}  ${data.github}`,
-    `${data.labelLinkedIn}  ${data.linkedin}`,
-    `${data.labelWeb}  ${data.web}`,
-    `${data.labelInterests}  ${data.interests}`,
-    ``,
-    `${data.labelCard}  ${data.npx}`,
-    ``,
-    `${chalk.bold(
-      "- I am one of those who think that humor and curiosity are the purest form of intelligence. -"
-    )}`,
-    `${chalk.bold("            🤪🤪🤪 please wait for the animation....")}`
-  ].join('\n') + '\n'.repeat(ROWS - 15 ),
->>>>>>> 35f30910f24ccfda556657e074f8bd81ec83a7d3
   {
     margin: 1,
     float: 'center',
@@ -159,11 +117,7 @@ function convertImageToAscii(image) {
     let index = Math.floor(relativeLuminance / (255 / chars.length));
     if(chars[index]) pixels.push(`${color ? `\x1b[38;5;${rgbToAnsi256(r,g,b)}m` : ""}`+chars[index])
     else pixels.push(`${color ? `\x1b[38;5;${rgbToAnsi256(r,g,b)}m` : ""}`+chars[0])
-<<<<<<< HEAD
     if(x !== COLUMNS) x++;
-=======
-    if(x !== 136) x++;
->>>>>>> 35f30910f24ccfda556657e074f8bd81ec83a7d3
     else {
         x = 0;
         y++;
@@ -175,19 +129,6 @@ function convertImageToAscii(image) {
 
 async function printFrame(frame){
   try {
-<<<<<<< HEAD
-=======
-    let pixels = [];
-    let row = ''
-    for (let i = 0; i < ROWS; i++) {
-      for (let j = 0; j < COLUMNS; j++) {
-        row+='8'
-      }
-      pixels.push(row);
-      row = ''
-    }
-
->>>>>>> 35f30910f24ccfda556657e074f8bd81ec83a7d3
     const image = await readFrame(`${__dirname}/frames/${frame}`)
     const imageInAscci = convertImageToAscii(image)
     const frameInbox = boxen(join+imageInAscci.join(join), {
@@ -211,12 +152,9 @@ function getFrameWithRate(rate, value){
 }
 async function main(){
   process.stdout.write(me);
-<<<<<<< HEAD
   const audioMoonmen = player.play('./audios/moonmen.mp3', function(err){
     if (err && !err.killed) throw err
   })
-=======
->>>>>>> 35f30910f24ccfda556657e074f8bd81ec83a7d3
   await exec(`./buildVideo.sh ./videos/morty.mp4 ${COLUMNS} ${ROWS} ${RATE}`)
   let files = require("fs").readdirSync(__dirname+"/frames/");
   const frames = []
@@ -225,7 +163,6 @@ async function main(){
     const frameToPrint = await printFrame(frame);
     frames.push(frameToPrint);
   }
-<<<<<<< HEAD
   audioMoonmen.kill();
   const audioRickAndMorty = player.play('./audios/rickAndMortySong.mp3', function(err){
     if (err && !err.killed) throw err
@@ -237,14 +174,6 @@ async function main(){
     process.stdout.write(frameWithRate);
   }
   audioRickAndMorty.kill();
-=======
-  for (let i = 0; i < frames.length; i++) {
-    const frame = frames[i];
-    const frameWithRate = await getFrameWithRate(1000/RATE, frame);
-    process.stdout.write("\u001b[0;0H");
-    process.stdout.write(frameWithRate);
-  }
->>>>>>> 35f30910f24ccfda556657e074f8bd81ec83a7d3
 
 }
 main()
