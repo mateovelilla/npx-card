@@ -1,7 +1,7 @@
 {
-  "name": "cristianjdelrio",
+  "name": "mateovelilla",
   "version": "1.0.0",
-  "description": "Just A Personal Card for Cristian Del Rio (CristianJDelRio)",
+  "description": "Just A Personal Card for Mateo Velilla Ospina (mateovelilla)",
   "main": "card.js",
   "bin": "./card.js",
   "scripts": {
@@ -17,9 +17,9 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@github.com:CristianJDelRio/npx-card.git"
+    "url": "git+ssh://git@github.com:mateovelilla/npx-card.git"
   },
-  "author": "CristianJDelRio",
+  "author": "mateovelilla",
   "license": "MIT",
   "dependencies": {
     "boxen": "^5.1.2",
