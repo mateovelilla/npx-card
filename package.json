@@ -1,6 +1,6 @@
 {
   "name": "mateovelilla",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "description": "Just A Personal Card for Mateo Velilla Ospina (mateovelilla)",
   "main": "card.js",
   "bin": "./card.js",
