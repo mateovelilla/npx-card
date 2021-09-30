@@ -2,6 +2,8 @@
 
 'use strict';
 const util = require('util');
+const fs = require('fs');
+const path = require('path');
 const exec = util.promisify(require('child_process').exec);
 const boxen = require('boxen');
 const clear = require('clear');
@@ -16,6 +18,8 @@ ROWS = (process.stdout.rows - MARGIN_AND_PADDING) % 2 === 0 ?
   process.stdout.rows - MARGIN_AND_PADDING :
   process.stdout.rows - MARGIN_AND_PADDING - 1;
 const chars = [" ", " ", ".", ":", "!", "+", "*", "e", "$", "@", "8"];
+const appDirectory = fs.realpathSync(process.cwd());
+const resolveApp = relativePath => path.resolve(appDirectory, relativePath);
 const color = true;
 const join = "";
 const RATE = 30;
@@ -129,7 +133,7 @@ function convertImageToAscii(image) {
 
 async function printFrame(frame){
   try {
-    const image = await readFrame(`./frames/${frame}`)
+    const image = await readFrame(resolveApp(`./frames/${frame}`))
     const imageInAscci = convertImageToAscii(image)
     const frameInbox = boxen(join+imageInAscci.join(join), {
       margin: 1,
@@ -152,11 +156,10 @@ function getFrameWithRate(rate, value){
 }
 async function main(){
   process.stdout.write(me);
-  const audioMoonmen = player.play('./audios/moonmen.mp3', function(err){
+  const audioMoonmen = player.play(resolveApp('./audios/moonmen.mp3'), function(err){
     if (err && !err.killed) throw err
   })
-  const {stdout,stderr} = await exec(`./buildVideo.sh ./videos/morty.mp4 ${COLUMNS} ${ROWS} ${RATE}`)
-  console.log({stdout,stderr} )
+  await exec(`./buildVideo.sh ${resolveApp('./videos/morty.mp4')} ${COLUMNS} ${ROWS} ${RATE}`)
   let files = require("fs").readdirSync(__dirname+"/frames/");
   const frames = []
   for (let i = 0; i < files.length; i++) {
@@ -165,7 +168,7 @@ async function main(){
     frames.push(frameToPrint);
   }
   audioMoonmen.kill();
-  const audioRickAndMorty = player.play('./audios/rickAndMortySong.mp3', function(err){
+  const audioRickAndMorty = player.play(resolveApp('./audios/rickAndMortySong.mp3'), function(err){
     if (err && !err.killed) throw err
   })
   for (let i = 0; i < frames.length; i++) {
