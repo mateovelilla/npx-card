@@ -1,4 +1,5 @@
 #! /bin/bash
+ls
 rm -fr ./frames/*
 rm -fr ./audios/rickAndMortySong.mp3
 yes "yes" | ffmpeg -i $1 -vf scale=$2:$3 output.mp4

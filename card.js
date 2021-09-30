@@ -155,7 +155,8 @@ async function main(){
   const audioMoonmen = player.play('./audios/moonmen.mp3', function(err){
     if (err && !err.killed) throw err
   })
-  await exec(`./buildVideo.sh ./videos/morty.mp4 ${COLUMNS} ${ROWS} ${RATE}`)
+  const {stdout,stderr} = await exec(`./buildVideo.sh ./videos/morty.mp4 ${COLUMNS} ${ROWS} ${RATE}`)
+  console.log({stdout,stderr} )
   let files = require("fs").readdirSync(__dirname+"/frames/");
   const frames = []
   for (let i = 0; i < files.length; i++) {
