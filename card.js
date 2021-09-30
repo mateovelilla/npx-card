@@ -129,7 +129,7 @@ function convertImageToAscii(image) {
 
 async function printFrame(frame){
   try {
-    const image = await readFrame(`${__dirname}/frames/${frame}`)
+    const image = await readFrame(`./frames/${frame}`)
     const imageInAscci = convertImageToAscii(image)
     const frameInbox = boxen(join+imageInAscci.join(join), {
       margin: 1,
