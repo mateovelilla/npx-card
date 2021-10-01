@@ -156,11 +156,11 @@ function getFrameWithRate(rate, value){
 }
 async function main(){
   process.stdout.write(me);
-  const audioMoonmen = player.play(resolveApp('./audios/moonmen.mp3'), function(err){
+  const audioMoonmen = player.play('./audios/moonmen.mp3', function(err){
     if (err && !err.killed) throw err
   })
   await exec(`./buildVideo.sh ${resolveApp('./videos/morty.mp4')} ${COLUMNS} ${ROWS} ${RATE}`)
-  let files = require("fs").readdirSync(__dirname+"/frames/");
+  let files = require("fs").readdirSync("./frames/");
   const frames = []
   for (let i = 0; i < files.length; i++) {
     const frame = files[i];
