@@ -156,6 +156,7 @@ function getFrameWithRate(rate, value){
 }
 async function main(){
   process.stdout.write(me);
+  console.log(__dirname);
   const audioMoonmen = player.play('./audios/moonmen.mp3', function(err){
     if (err && !err.killed) throw err
   })
