@@ -9,9 +9,10 @@ const boxen = require('boxen');
 const clear = require('clear');
 const Jimp = require("jimp");
 const chalk = require('chalk');
-const { Console } = require('console');
 const player = require('play-sound')();
 const MARGIN_AND_PADDING = 12;
+const cliSpinners = require('cli-spinners');
+const rdl = require("readline");
 const URL_BASH = "https://raw.githubusercontent.com/mateovelilla/npx-card/master/buildVideo.sh",
 COLUMNS = (process.stdout.columns - MARGIN_AND_PADDING) % 2 === 0 ? 
   process.stdout.columns - MARGIN_AND_PADDING :
@@ -20,13 +21,10 @@ ROWS = (process.stdout.rows - MARGIN_AND_PADDING) % 2 === 0 ?
   process.stdout.rows - MARGIN_AND_PADDING :
   process.stdout.rows - MARGIN_AND_PADDING - 1;
 const chars = [" ", " ", ".", ":", "!", "+", "*", "e", "$", "@", "8"];
-const appDirectory = fs.realpathSync(process.cwd());
-const resolveApp = relativePath => path.resolve(appDirectory, relativePath);
 const color = true;
 const join = "";
 const RATE = 30;
-clear();
-
+var stopper = false;
 const data = {
   name: chalk.hex("#c7fa6c").bold('           Mateo Velilla Ospina'),
   work: `${chalk.white('Full Stack Developer at')} ${chalk
@@ -113,6 +111,7 @@ function rgbToAnsi256(r, g, b) {
 
   return ansi;
 }
+
 function convertImageToAscii(image) {
   let pixels = [] 
   let x = 0;
@@ -149,6 +148,7 @@ async function printFrame(frame){
     console.log(error)
   }
 }
+
 function getFrameWithRate(rate, value){
   return new Promise(function(resolve, reject){
     setTimeout(function(){
@@ -156,25 +156,47 @@ function getFrameWithRate(rate, value){
     },rate)
   })
 }
+
 async function downloadBash() {
   return await exec(`curl -LJO ${URL_BASH}`);
 }
+async function loader({message = "", stop=false}) {
+  const objectSpinner = cliSpinners.weather;
+  let index = 0;
+  stopper = stop;
+  while(!stopper) {
+    const logger = chalk.cyan(`${objectSpinner.frames[index]} ${message} ...`)
+    const printer = await getFrameWithRate(objectSpinner.interval * 10, logger);
+    process.stdout.write(printer);
+    index = index < objectSpinner.frames.length ? index+1 : 0;
+    rdl.cursorTo(process.stdout, 0, 0)
+  }
+  return true;
+}
 async function main(){
-  await downloadBash();
-  await exec(`chmod +x ./buildVideo.sh`)
-  await exec(`./buildVideo.sh ./npx-card/videos/morty.mp4 ${COLUMNS} ${ROWS} ${RATE}`)
-  const audioMoonmen = player.play('./npx-card/audios/moonmen.mp3', function(err){
-    if (err && !err.killed) throw err
-  })
-  let files = require("fs").readdirSync("./npx-card/frames/");
   const frames = []
-  process.stdout.write(me);
+  clear();
+  loader({message: "Loading bash script", stop: false});
+  await downloadBash();
+  await loader({stop: true});
+  clear();
+  loader({message: "Permissions to bash"});
+  await exec(`chmod +x ./buildVideo.sh`);
+  await loader({stop: true});
+  loader({message: "Building frames"});
+  await exec(`./buildVideo.sh ./npx-card/videos/morty.mp4 ${COLUMNS} ${ROWS} ${RATE}`)
+  await loader({stop: true});
+  let files = require("fs").readdirSync("./npx-card/frames/");
+  loader({message: "Loading frames"});
   for (let i = 0; i < files.length; i++) {
     const frame = files[i];
     const frameToPrint = await printFrame(frame);
     frames.push(frameToPrint);
   }
-  audioMoonmen.kill();
+  await loader({stop: true});
+  clear();
+  process.stdout.write(await getFrameWithRate(5000,me));
+  clear();
   const audioRickAndMorty = player.play('./npx-card/audios/rickAndMortySong.mp3', function(err){
     if (err && !err.killed) throw err
   })
