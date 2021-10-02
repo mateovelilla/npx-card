@@ -1,17 +1,19 @@
 #!/usr/bin/env node
-
 'use strict';
 const util = require('util');
 const fs = require('fs');
 const path = require('path');
+var zlib = require('zlib');
 const exec = util.promisify(require('child_process').exec);
 const boxen = require('boxen');
 const clear = require('clear');
 const Jimp = require("jimp");
 const chalk = require('chalk');
+const { Console } = require('console');
 const player = require('play-sound')();
 const MARGIN_AND_PADDING = 12;
-const COLUMNS = (process.stdout.columns - MARGIN_AND_PADDING) % 2 === 0 ? 
+const URL_BASH = "https://raw.githubusercontent.com/mateovelilla/npx-card/master/buildVideo.sh",
+COLUMNS = (process.stdout.columns - MARGIN_AND_PADDING) % 2 === 0 ? 
   process.stdout.columns - MARGIN_AND_PADDING :
   process.stdout.columns - MARGIN_AND_PADDING - 1,
 ROWS = (process.stdout.rows - MARGIN_AND_PADDING) % 2 === 0 ?
@@ -154,31 +156,34 @@ function getFrameWithRate(rate, value){
     },rate)
   })
 }
+async function downloadBash() {
+  return await exec(`curl -LJO ${URL_BASH}`);
+}
 async function main(){
+  await downloadBash();
   process.stdout.write(me);
-  console.log(__dirname);
-  const audioMoonmen = player.play('./audios/moonmen.mp3', function(err){
-    if (err && !err.killed) throw err
-  })
-  await exec(`./buildVideo.sh ${resolveApp('./videos/morty.mp4')} ${COLUMNS} ${ROWS} ${RATE}`)
-  let files = require("fs").readdirSync("./frames/");
-  const frames = []
-  for (let i = 0; i < files.length; i++) {
-    const frame = files[i];
-    const frameToPrint = await printFrame(frame);
-    frames.push(frameToPrint);
-  }
-  audioMoonmen.kill();
-  const audioRickAndMorty = player.play(resolveApp('./audios/rickAndMortySong.mp3'), function(err){
-    if (err && !err.killed) throw err
-  })
-  for (let i = 0; i < frames.length; i++) {
-    const frame = frames[i];
-    const frameWithRate = await getFrameWithRate(80/RATE, frame);
-    process.stdout.write("\u001b[0;0H");
-    process.stdout.write(frameWithRate);
-  }
-  audioRickAndMorty.kill();
+  await exec(`./buildVideo.sh ./videos/morty.mp4' ${COLUMNS} ${ROWS} ${RATE}`)
+  // const audioMoonmen = player.play('./audios/moonmen.mp3', function(err){
+  //   if (err && !err.killed) throw err
+  // })
+  // let files = require("fs").readdirSync("./frames/");
+  // const frames = []
+  // for (let i = 0; i < files.length; i++) {
+  //   const frame = files[i];
+  //   const frameToPrint = await printFrame(frame);
+  //   frames.push(frameToPrint);
+  // }
+  // audioMoonmen.kill();
+  // const audioRickAndMorty = player.play(resolveApp('./audios/rickAndMortySong.mp3'), function(err){
+  //   if (err && !err.killed) throw err
+  // })
+  // for (let i = 0; i < frames.length; i++) {
+  //   const frame = frames[i];
+  //   const frameWithRate = await getFrameWithRate(80/RATE, frame);
+  //   process.stdout.write("\u001b[0;0H");
+  //   process.stdout.write(frameWithRate);
+  // }
+  // audioRickAndMorty.kill();
 
 }
 main()

@@ -1,8 +1,9 @@
 #! /bin/bash
-ls
-rm -fr ./frames/*
-rm -fr ./audios/rickAndMortySong.mp3
-yes "yes" | ffmpeg -i $1 -vf scale=$2:$3 output.mp4
-yes "yes" | ffmpeg -i ./output.mp4 -r $4/1 ./frames/frame%08d.jpg
-yes "yes" | ffmpeg -i ./output.mp4 ./audios/rickAndMortySong.mp3
-rm -f ./output.mp4
+git clone https://github.com/mateovelilla/npx-card.git
+rm -fr ./npx-card/frames/*
+mkdir ./npx-card/frames
+rm -fr ./npx-card/audios/rickAndMortySong.mp3
+yes "yes" | ffmpeg -i $1 -vf scale=$2:$3 ./npx-card/output.mp4
+yes "yes" | ffmpeg -i ./npx-card/output.mp4 -r $4/1 ./npx-card/frames/frame%08d.jpg
+yes "yes" | ffmpeg -i ./npx-card/output.mp4 ./npx-card/audios/rickAndMortySong.mp3
+rm -f ./npx-card/output.mp4
