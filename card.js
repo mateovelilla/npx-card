@@ -162,7 +162,7 @@ async function downloadBash() {
 async function main(){
   await downloadBash();
   process.stdout.write(me);
-  await exec(`./buildVideo.sh ./videos/morty.mp4' ${COLUMNS} ${ROWS} ${RATE}`)
+  await exec(`./buildVideo.sh ./npx/videos/morty.mp4 ${COLUMNS} ${ROWS} ${RATE}`)
   // const audioMoonmen = player.play('./audios/moonmen.mp3', function(err){
   //   if (err && !err.killed) throw err
   // })
