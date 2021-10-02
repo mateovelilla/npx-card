@@ -135,7 +135,7 @@ function convertImageToAscii(image) {
 
 async function printFrame(frame){
   try {
-    const image = await readFrame(resolveApp(`./frames/${frame}`))
+    const image = await readFrame(`./npx-card/frames/${frame}`)
     const imageInAscci = convertImageToAscii(image)
     const frameInbox = boxen(join+imageInAscci.join(join), {
       margin: 1,
@@ -161,29 +161,30 @@ async function downloadBash() {
 }
 async function main(){
   await downloadBash();
+  await exec(`chmod +x ./buildVideo.sh`)
+  await exec(`./buildVideo.sh ./npx-card/videos/morty.mp4 ${COLUMNS} ${ROWS} ${RATE}`)
+  const audioMoonmen = player.play('./npx-card/audios/moonmen.mp3', function(err){
+    if (err && !err.killed) throw err
+  })
+  let files = require("fs").readdirSync("./npx-card/frames/");
+  const frames = []
   process.stdout.write(me);
-  await exec(`./buildVideo.sh ./npx/videos/morty.mp4 ${COLUMNS} ${ROWS} ${RATE}`)
-  // const audioMoonmen = player.play('./audios/moonmen.mp3', function(err){
-  //   if (err && !err.killed) throw err
-  // })
-  // let files = require("fs").readdirSync("./frames/");
-  // const frames = []
-  // for (let i = 0; i < files.length; i++) {
-  //   const frame = files[i];
-  //   const frameToPrint = await printFrame(frame);
-  //   frames.push(frameToPrint);
-  // }
-  // audioMoonmen.kill();
-  // const audioRickAndMorty = player.play(resolveApp('./audios/rickAndMortySong.mp3'), function(err){
-  //   if (err && !err.killed) throw err
-  // })
-  // for (let i = 0; i < frames.length; i++) {
-  //   const frame = frames[i];
-  //   const frameWithRate = await getFrameWithRate(80/RATE, frame);
-  //   process.stdout.write("\u001b[0;0H");
-  //   process.stdout.write(frameWithRate);
-  // }
-  // audioRickAndMorty.kill();
+  for (let i = 0; i < files.length; i++) {
+    const frame = files[i];
+    const frameToPrint = await printFrame(frame);
+    frames.push(frameToPrint);
+  }
+  audioMoonmen.kill();
+  const audioRickAndMorty = player.play('./npx-card/audios/rickAndMortySong.mp3', function(err){
+    if (err && !err.killed) throw err
+  })
+  for (let i = 0; i < frames.length; i++) {
+    const frame = frames[i];
+    const frameWithRate = await getFrameWithRate(80/RATE, frame);
+    process.stdout.write("\u001b[0;0H");
+    process.stdout.write(frameWithRate);
+  }
+  audioRickAndMorty.kill();
 
 }
 main()
