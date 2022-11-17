@@ -4,7 +4,7 @@ const util = require('util');
 const path = require('path');
 // const fs = require('fs');
 // var zlib = require('zlib');
-// const exec = util.promisify(require('child_process').exec);
+const exec = util.promisify(require('child_process').exec);
 const boxen = require('boxen');
 const clear = require('clear')
 const Jimp = require("jimp");
@@ -23,16 +23,42 @@ const URL_BASH = "https://raw.githubusercontent.com/mateovelilla/npx-card/master
 const chars = [" ", " ", ".", ":", "!", "+", "*", "e", "$", "@", "8"];
 const color = true;
 const join = "";
-// const RATE = 30;
+const RATE = 30;
 // var stopper = false;
 const data = {
   me: `I'm ${chalk.hex('#97ce4c').bold('Mateo Velilla')} full stack developer, \n
-        I just like to know how everything works and learn from them,
+        I just like to know how everything works and learn from it,
         I consider myself an eternal learner,
         I like to think that: ${
           chalk.hex('#97ce4c').bold(`
             Imagination is more important than knowledge.
             Knowledge is limited and imagination surrounds the world.`)}`,
+  language_platforms: [
+    {
+      'title': 'Javascript',
+      'img': 'javascript.png'
+    },
+    {
+      'title': 'Node JS',
+      'img': 'nodejs.jpg'
+    },
+    {
+      'title': 'Rust',
+      'img': 'rustlang.png'
+    },
+    {
+      'title': 'CSS',
+      'img': 'css.png'
+    },
+    {
+      'title': 'AWS',
+      'img': 'aws.png'
+    },
+    {
+      'title': 'Google Cloud',
+      'img': 'gc.jpg'
+    }
+  ],
   name: chalk.hex("#c7fa6c").bold('           Mateo Velilla Ospina'),
   work: `${chalk.white('Full Stack Developer at')} ${chalk
     .hex('#cca918')
@@ -140,12 +166,12 @@ function convertImageToAscii(image) {
   return pixels
 }
 
-async function printFrame(imageUrl) {
+async function printFrame(imageUrl, title) {
   try {
-    // const image = await readFrame(`./npx-card/frames/${frame}`)
     const image = await readFrame(imageUrl)
     const imageInAscci = convertImageToAscii(image)
     const frameInbox = boxen(join + imageInAscci.join(join), {
+      title,
       margin: 1,
       float: 'center',
       padding: 1,
@@ -158,7 +184,17 @@ async function printFrame(imageUrl) {
     console.log(error)
   }
 }
-
+async function printFrames(frames, time) {
+  console.log(frames.pop())
+  const timer = setInterval(() => {
+    if(frames.length) {
+      clear()
+      console.log(frames.pop())
+    }else {
+      clearInterval(timer)
+    }
+  },time)
+}
 // function getFrameWithRate(rate, value) {
 //   return new Promise(function (resolve, reject) {
 //     setTimeout(function () {
@@ -167,9 +203,9 @@ async function printFrame(imageUrl) {
 //   })
 // }
 
-// async function downloadBash() {
-//   return await exec(`curl -LJO ${URL_BASH}`);
-// }
+async function downloadBash() {
+  return await exec(`curl -LJO ${URL_BASH}`);
+}
 async function loader({ message = "", stop = false, cb }) {
   const EMOJI = '🏃 🦖'
   const SIZE_COLUMS = process.stdout.columns;
@@ -220,17 +256,34 @@ function generateBox(title, message) {
   })
 }
 async function main() {
-  const frames = []
   let timer;
+  const frames = []
   loader({ message: "Loading frames...", stop: false, cb: (error, interval) => {
     timer = interval
   }});
-  //BULD NODEJS LOGO
-  const node_js_logo_in_ascci =  await printFrame(path.resolve(__dirname,'./media/node-js-icon.jpg'));
-  clearInterval(timer)
-  console.log(node_js_logo_in_ascci)
-  clear()
-  console.log(generateBox('Hi guys',data.me))
+  await downloadBash();
+  //BULD LOGOS BY COLUMNS AND ROWS
+  await exec(`chmod +x ./buildVideo.sh`);
+  await exec(`./scripts/build-images.sh ./npx-card/imgs/nodejs.jpg ${COLUMNS} ${ROWS} ${RATE} nodejs.jpg`)
+
+  //BULD LOGOS
+  const laguages_platforms = data.language_platforms.map(async ({title, img})=> {
+    return printFrame(
+        path.resolve(__dirname,`./imgs/${img}`),
+        title
+      )
+  })
+  const languages = await Promise.all(laguages_platforms)
+  // console.log(await Promise.all(laguages_platforms))
+  // const node_js_logo_in_ascci =  await printFrame(path.resolve(__dirname,'./media/node-js-icon.jpg'));
+  // const node
+  clearInterval(timer);
+  printFrames(languages,15000)
+  // printFrames([
+  //   node_js_logo_in_ascci,
+  //   generateBox('Hi guys',data.me),
+  // ], 15000)
+  // printFrames(laguages_platforms, 15000)
   // setTimeout(()=> {
   //   console.log('Entro aca')
   //   clearInterval(timer)
