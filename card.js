@@ -263,7 +263,7 @@ async function main() {
   }});
   await downloadBash();
   //BULD LOGOS BY COLUMNS AND ROWS
-  await exec(`chmod +x ./buildVideo.sh`);
+  await exec(`chmod +x ./scripts/build-images.sh`);
   await exec(`./scripts/build-images.sh ./npx-card/imgs/nodejs.jpg ${COLUMNS} ${ROWS} ${RATE} nodejs.jpg`)
 
   //BULD LOGOS
