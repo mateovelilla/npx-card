@@ -2,7 +2,7 @@
 'use strict';
 const util = require('util');
 const path = require('path');
-// const fs = require('fs');
+const fs = require('fs');
 // var zlib = require('zlib');
 const exec = util.promisify(require('child_process').exec);
 const boxen = require('boxen');
@@ -19,7 +19,95 @@ const URL_BASH = "https://raw.githubusercontent.com/mateovelilla/npx-card/master
     process.stdout.columns - MARGIN_AND_PADDING - 1,
   ROWS = (process.stdout.rows - MARGIN_AND_PADDING) % 2 === 0 ?
     process.stdout.rows - MARGIN_AND_PADDING :
-    process.stdout.rows - MARGIN_AND_PADDING - 1;
+    process.stdout.rows - MARGIN_AND_PADDING - 1,
+    LANGUAGES_IMAGES_FOLDER = './imgs/languages',
+    RESOLUTIONS = [
+      {
+        name: '800_x_600',
+        columns: 64,
+        rows: 22,
+      },
+      {
+        name: '1024_x_768',
+        columns: 85,
+        rows: 30,
+      },
+      {
+        name: '1152_x_864',
+        columns: 94,
+        rows: 34,
+      },
+      {
+        name: '1280_x_720',
+        columns: 108,
+        rows: 28,
+      },
+      {
+        name: '1280_x_768',
+        columns: 108,
+        rows:  30,
+      },
+      {
+        name: '1280_x_800',
+        columns: 108,
+        rows: 31,
+      },
+      {
+        name: '1280_x_960',
+        columns: 108,
+        rows: 38,
+      },
+      {
+        name: '1280_x_1024',
+        columns: 108,
+        rows: 41,
+      },
+      {
+        name: '1360_x_768',
+        columns: 115,
+        rows: 30,
+      },
+      {
+        name: '1400_x_1050',
+        columns: 119,
+        rows: 42,
+      },
+      {
+        name: '1440_x_900',
+        columns: 122,
+        rows: 35,
+      },
+      {
+        name: '1600_x_1200',
+        columns: 137,
+        rows:  48,
+      },
+      {
+        name: '1680_x_1050',
+        columns: 144,
+        rows: 42,
+      },
+      {
+        name: '1792_x_1344',
+        columns: 154,
+        rows: 55,
+      },
+      {
+        name: '1856_x_1392',
+        columns: 160,
+        rows: 57,
+      },
+      {
+        name: '1920_x_1200',
+        columns: 166,
+        rows: 43,
+      },
+      {
+        name: '1920_x_1440',
+        columns: 166,
+        rows: 48,
+      },
+    ];
 const chars = [" ", " ", ".", ":", "!", "+", "*", "e", "$", "@", "8"];
 const color = true;
 const join = "";
@@ -150,13 +238,13 @@ function convertImageToAscii(image) {
   let pixels = []
   let x = 0;
   let y = 0;
-  while (y != ROWS) {
+  while (y != ROWS + 6) {
     const { r, g, b } = Jimp.intToRGBA(image.getPixelColor(x, y))
     const relativeLuminance = (0.2126 * r + 0.7152 * g + 0.0722 * b);
     let index = Math.floor(relativeLuminance / (255 / chars.length));
     if (chars[index]) pixels.push(`${color ? `\x1b[38;5;${rgbToAnsi256(r, g, b)}m` : ""}` + chars[index])
     else pixels.push(`${color ? `\x1b[38;5;${rgbToAnsi256(r, g, b)}m` : ""}` + chars[0])
-    if (x !== COLUMNS) x++;
+    if (x !== COLUMNS - 12) x++;
     else {
       x = 0;
       y++;
@@ -208,12 +296,12 @@ async function downloadBash() {
 }
 async function loader({ message = "", stop = false, cb }) {
   const EMOJI = '🏃 🦖'
-  const SIZE_COLUMS = process.stdout.columns;
+  const SIZE_columns = process.stdout.columns;
   const SIZE_ROWS = process.stdout.rows;
-  let count = Math.round(SIZE_COLUMS/2)  - message.length - 12
+  let count = Math.round(SIZE_columns/2)  - message.length - 12
   const TIME = 100
   const timer = setInterval(()=>{
-    if(count && count <= SIZE_COLUMS) {
+    if(count && count <= SIZE_columns) {
       count--;
       clear()
       const content = boxen(
@@ -223,7 +311,7 @@ async function loader({ message = "", stop = false, cb }) {
             message +
             new Array(count).fill(' ').join(' ') +
             EMOJI +
-            new Array(SIZE_COLUMS - count).fill(' ').join(' ')
+            new Array(SIZE_columns - count).fill(' ').join(' ')
           ), 
           margin: 1,
           float: 'center',
@@ -255,34 +343,59 @@ function generateBox(title, message) {
     backgroundColor: '#171421'
   })
 }
+async function buildImagesByResolution() {
+  const logosToConvert = await fs.readdirSync(LANGUAGES_IMAGES_FOLDER)
+  
+  // Create Folders
+  await Promise.all(RESOLUTIONS.map(({name}) => fs.mkdirSync(path.resolve(__dirname, `./imgs/${name}`))))
+  await Promise.all(logosToConvert.map(async (logo) => {
+    return await Promise.all(
+      RESOLUTIONS
+        .map(({
+          name,
+          columns,
+          rows
+        }) => exec(
+            `./scripts/build-images-by-resolution.sh  ${LANGUAGES_IMAGES_FOLDER}/${logo} ${columns} ${rows} ./imgs/${name}/${logo}`
+          )
+        )
+    )
+  }))
+
+}
 async function main() {
   let timer;
-  const frames = []
   loader({ message: "Loading frames...", stop: false, cb: (error, interval) => {
     timer = interval
   }});
   await downloadBash();
   //BULD LOGOS BY COLUMNS AND ROWS
-  await exec(`chmod +x ./scripts/build-images.sh`);
-  await exec(`./scripts/build-images.sh ./npx-card/imgs/nodejs.jpg ${COLUMNS} ${ROWS} ./npx-card/frames/logos/nodejs.jpg ${RATE}`)
+  // await exec(`chmod +x ./scripts/build-images.sh`);
+  // await Promise.all(data.language_platforms.map(({img})=> exec(`./scripts/build-images.sh ./npx-card/imgs/${img} ${COLUMNS} ${ROWS} ./npx-card/frames/logos/${language} ${RATE}`)))
+  // await exec(`./scripts/build-images.sh ./npx-card/imgs/nodejs.jpg ${COLUMNS} ${ROWS} ./npx-card/frames/logos/nodejs.jpg ${RATE}`)
 
   //BULD LOGOS
-  const laguages_platforms = data.language_platforms.map(async ({title, img})=> {
-    return printFrame(
-        path.resolve(__dirname,`./imgs/${img}`),
-        title
-      )
-  })
-  const languages = await Promise.all(laguages_platforms)
-  // console.log(await Promise.all(laguages_platforms))
-  // const node_js_logo_in_ascci =  await printFrame(path.resolve(__dirname,'./media/node-js-icon.jpg'));
-  // const node
+  // const laguages_platforms = data.language_platforms.map(async ({title, img})=> {
+  //   return printFrame(
+  //       path.resolve(__dirname,`./imgs/800_600/nodejs.jpg`),
+  //       title
+  //     )
+  // })
+  // const languages = await Promise.all(laguages_platforms)
+  const images = await fs.readdirSync(LANGUAGES_IMAGES_FOLDER)
   clearInterval(timer);
-  printFrames(languages,15000)
-  // printFrames([
-  //   node_js_logo_in_ascci,
-  //   generateBox('Hi guys',data.me),
-  // ], 15000)
+  // console.log(await Promise.all(laguages_platforms))
+  const node_js_logo_in_ascci =  await printFrame(path.resolve(__dirname,'./imgs/800_x_600/aws.png'));
+  const frames = images.map((image)=> path.resolve(__dirname,`./imgs/800_x_600/${image}`))
+  const framesToPrint = await Promise.all(frames.map(frame => printFrame(frame)))
+  // const node
+  // clearInterval(timer);
+  // printFrames(languages,15000)
+  clear()
+  printFrames([
+    ...framesToPrint,
+    generateBox('Hi guys',data.me),
+  ], 5000)
   // printFrames(laguages_platforms, 15000)
   // setTimeout(()=> {
   //   console.log('Entro aca')
@@ -322,3 +435,4 @@ async function main() {
 
 }
 main()
+// buildImagesByResolution()
