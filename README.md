@@ -36,4 +36,10 @@ This card it's inspired by the one that @anmol098 created. Take a look to his [r
 1920 X 1440 --> 166 X 48
 
 TODO:
-Hace algoritmo para convertir a resoluciones basado en el numero de columnas y filas de la resolucion
+- Add more technologies logos
+- Add secret functionalities to play a fun video
+- create a temp folder to dowload images from github
+- load images from temp folder
+- delete card.js file and put content in a blog
+- scaffolding refactor
+- delete script not necessary

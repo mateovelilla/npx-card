@@ -1,5 +1,9 @@
 #! /bin/bash
 yes "yes" | ffmpeg -i $1 -vf scale=$2:$3 $4
+# yes "yes" | ffmpeg -i $1 -vf scale=iw:1/PHI*iw $4
+
+
+
 # rm -rf ./npx-card
 # git clone https://github.com/mateovelilla/npx-card.git
 # rm -rf ./npx-card/frames/logos/*

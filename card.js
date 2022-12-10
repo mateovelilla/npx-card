@@ -120,33 +120,8 @@ const data = {
         I like to think that: ${
           chalk.hex('#97ce4c').bold(`
             Imagination is more important than knowledge.
-            Knowledge is limited and imagination surrounds the world.`)}`,
-  language_platforms: [
-    {
-      'title': 'Javascript',
-      'img': 'javascript.png'
-    },
-    {
-      'title': 'Node JS',
-      'img': 'nodejs.jpg'
-    },
-    {
-      'title': 'Rust',
-      'img': 'rustlang.png'
-    },
-    {
-      'title': 'CSS',
-      'img': 'css.png'
-    },
-    {
-      'title': 'AWS',
-      'img': 'aws.png'
-    },
-    {
-      'title': 'Google Cloud',
-      'img': 'gc.jpg'
-    }
-  ],
+            Knowledge is limited and imagination surrounds the world.`)}
+        My main interests are:`,
   name: chalk.hex("#c7fa6c").bold('           Mateo Velilla Ospina'),
   work: `${chalk.white('Full Stack Developer at')} ${chalk
     .hex('#cca918')
@@ -238,13 +213,13 @@ function convertImageToAscii(image) {
   let pixels = []
   let x = 0;
   let y = 0;
-  while (y != ROWS + 6) {
+  while (y !== ROWS) {
     const { r, g, b } = Jimp.intToRGBA(image.getPixelColor(x, y))
     const relativeLuminance = (0.2126 * r + 0.7152 * g + 0.0722 * b);
     let index = Math.floor(relativeLuminance / (255 / chars.length));
     if (chars[index]) pixels.push(`${color ? `\x1b[38;5;${rgbToAnsi256(r, g, b)}m` : ""}` + chars[index])
     else pixels.push(`${color ? `\x1b[38;5;${rgbToAnsi256(r, g, b)}m` : ""}` + chars[0])
-    if (x !== COLUMNS - 12) x++;
+    if (x !== COLUMNS) x++;
     else {
       x = 0;
       y++;
@@ -260,7 +235,7 @@ async function printFrame(imageUrl, title) {
     const imageInAscci = convertImageToAscii(image)
     const frameInbox = boxen(join + imageInAscci.join(join), {
       title,
-      margin: 1,
+      margin: 0,
       float: 'center',
       padding: 1,
       borderStyle: 'round',
@@ -282,6 +257,76 @@ async function printFrames(frames, time) {
       clearInterval(timer)
     }
   },time)
+}
+
+function getResolutionFolder(columns, rows) {
+  let resolutionFolder = ''
+  if(columns <= 64) {
+    resolutionFolder =  '800_x_600'
+  }
+
+  if(columns > 64 && columns <= 85) {
+    resolutionFolder = '1024_x_768'
+  }
+  
+  if(columns > 85 && columns <= 94) {
+    resolutionFolder = '1152_x_864'
+  }
+
+  if(columns > 94 && columns <= 108 && rows <= 28) {
+    resolutionFolder =  '1280_x_720'
+  }
+
+  if(columns > 94 && columns <= 108 && (rows > 28 &&  rows <= 30) ) {
+    resolutionFolder =  '1280_x_768'
+  }
+  
+  if(columns > 94 && columns <= 108 && (rows > 30 &&  rows <= 31) ) {
+    resolutionFolder =  '1280_x_800'
+  }
+  
+  if(columns > 94 && columns <= 108 && (rows > 31 &&  rows <= 38) ) {
+    resolutionFolder =  '1280_x_960'
+  }
+  
+  if(columns > 108 && columns <= 115) {
+    resolutionFolder =  '1360_x_768'
+  }
+  
+  if(columns > 115 && columns <= 119) {
+    resolutionFolder =  '1400_x_1050'
+  }
+
+  if(columns > 119 && columns <= 122) {
+    resolutionFolder =  '1440_x_900'
+  }
+
+  if(columns > 122 && columns <= 137) {
+    resolutionFolder =  '1600_x_1200'
+  }
+  
+  if(columns > 137 && columns <= 144) {
+    resolutionFolder =  '1680_x_1050'
+  }
+  
+  if(columns > 144 && columns <= 154) {
+    resolutionFolder =  '1792_x_1344'
+  }
+  
+  if(columns > 154 && columns <= 160) {
+    resolutionFolder =  '1856_x_1392'
+  }
+
+  if(columns > 160 && columns <= 166 && (rows > 38 &&  rows <= 43) ) {
+    resolutionFolder =  '1920_x_1200'
+  }
+
+  if(columns > 160 && (rows > 43 &&  rows <= 48) ) {
+    resolutionFolder =  '1920_x_1440'
+  }
+  
+  return resolutionFolder;
+
 }
 // function getFrameWithRate(rate, value) {
 //   return new Promise(function (resolve, reject) {
@@ -356,7 +401,7 @@ async function buildImagesByResolution() {
           columns,
           rows
         }) => exec(
-            `./scripts/build-images-by-resolution.sh  ${LANGUAGES_IMAGES_FOLDER}/${logo} ${columns} ${rows} ./imgs/${name}/${logo}`
+            `./scripts/build-images-by-resolution.sh  ${LANGUAGES_IMAGES_FOLDER}/${logo} ${COLUMNS-12} ${ROWS-12} ./imgs/${name}/${logo}`
           )
         )
     )
@@ -382,20 +427,27 @@ async function main() {
   //     )
   // })
   // const languages = await Promise.all(laguages_platforms)
-  const images = await fs.readdirSync(LANGUAGES_IMAGES_FOLDER)
-  clearInterval(timer);
+    const images = await fs.readdirSync(LANGUAGES_IMAGES_FOLDER)
+    console.log(images)
+    clearInterval(timer);
+    const folder = getResolutionFolder(COLUMNS, ROWS)
+
   // console.log(await Promise.all(laguages_platforms))
-  const node_js_logo_in_ascci =  await printFrame(path.resolve(__dirname,'./imgs/800_x_600/aws.png'));
-  const frames = images.map((image)=> path.resolve(__dirname,`./imgs/800_x_600/${image}`))
-  const framesToPrint = await Promise.all(frames.map(frame => printFrame(frame)))
+    const frames = images.map((image)=> {
+      return {
+        title: image.split('.')[0].toUpperCase(),
+        path: path.resolve(__dirname,`./imgs/${folder}/${image}`)
+      }
+    })
+    const framesToPrint = await Promise.all(frames.map(({path, title}) => printFrame(path, title)))
   // const node
   // clearInterval(timer);
   // printFrames(languages,15000)
-  clear()
-  printFrames([
-    ...framesToPrint,
-    generateBox('Hi guys',data.me),
-  ], 5000)
+    clear()
+    printFrames([
+      ...framesToPrint,
+      generateBox('Hi guys',data.me),
+    ], 13000)
   // printFrames(laguages_platforms, 15000)
   // setTimeout(()=> {
   //   console.log('Entro aca')
