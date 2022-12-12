@@ -1,6 +1,7 @@
 'use strict'
 const path = require('path')
-const fs = require('fs')
+const fs = require('fs');
+const util = require('util')
 const {setTimeout: timerPromise } = require('timers/promises');
 const Jimp = require('jimp');
 const boxen = require('boxen');
@@ -164,4 +165,27 @@ async function main() {
     boxen_images.push(last_slide)
     printFrames(boxen_images, 3000)
 }
-main()
+// main()
+async function asyncprintVideo() {
+  const folder_frames = fs.readdirSync(path.resolve(__dirname, './frames/samurai_jack'))
+  const file = fs.createWriteStream('movie.txt',{
+    flags: 'a+',
+  })
+  for await (const img of folder_frames) {
+    const frame = await Jimp.read(
+      path.resolve(
+      __dirname,
+      './frames/samurai_jack/',
+      img
+      )
+    )
+    const frame_resize = frame.resize(process.stdout.columns - 5,process.stdout.rows - 5)
+    const frame_convert_to_ascci = convertImageToAscii(frame_resize)
+    file.write('break - line' + frame_convert_to_ascci.join(""))
+  }
+  const movie = fs.readFileSync(path.resolve(__dirname, 'movie.txt'))
+  const movie_splitting = movie.toString().split('break - line')
+  printFrames(movie_splitting, 50)
+  console.log("finished!")
+}
+asyncprintVideo()
