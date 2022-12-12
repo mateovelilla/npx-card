@@ -25,15 +25,8 @@ const data = {
     twitter: chalk.cyan('https://twitter.com/r3v3r5ing'),
     linkedin:
       chalk.cyan('https://www.linkedin.com/in/mateo-velilla-ospina'),
-    web: chalk.cyan('https://www.mateovelilla.com/'),
+    web: chalk.cyan('https://www.mateovelilla.dev/'),
     npx: chalk.red('npx') + ' ' + chalk.white('mateovelilla'),
-    interests: chalk.cyan("Tests ") +
-      chalk.green("Nodejs ") +
-      chalk.yellow("Javascript ") +
-      chalk.keyword("orange")("Rust ") +
-      chalk.keyword("pink")("CSS ") +
-      chalk.yellow("AWS ") +
-      chalk.red("Pentesting"),
     lofiMusic: "https://www.chosic.com/download-audio/24220/",
     labelWork: chalk.white.bold('        Work:'),
     labelTwitter: chalk.white.bold('        Twitter:'),
@@ -41,8 +34,6 @@ const data = {
     labelLinkedIn: chalk.white.bold('        LinkedIn:'),
     labelWeb: chalk.white.bold('        Web:'),
     labelCard: chalk.white.bold('        Card:'),
-    labelInterests: chalk.white('        Interest:'),
-    labelLofiMusic: "       🎵🎵🎵 Lofi Music:"
   
 };
 function rgbToAnsi256(r, g, b) {
@@ -115,13 +106,13 @@ async function main() {
             title
         }
     })
-    const asccii_images = resize_images.map(({img,title}) => {
+    const ascii_images = resize_images.map(({img,title}) => {
         return {
             img: convertImageToAscii(img),
             title
         }
     })
-    const boxen_images = asccii_images.map(({img,title})=> boxen(
+    const boxen_images = ascii_images.map(({img,title})=> boxen(
         img.join(""),
         {
             title: title,
@@ -147,6 +138,30 @@ async function main() {
       })
     console.log(about_me)
     await timerPromise(15000)
+    const {me, ...personal_information}= data;
+    const last_slide = boxen(
+      [
+        `${personal_information.name}`,
+        ``,
+        `${personal_information.labelWork}  ${personal_information.work}`,
+        ``,
+        `${personal_information.labelTwitter}  ${personal_information.twitter}`,
+        `${personal_information.labelGitHub}  ${personal_information.github}`,
+        `${personal_information.labelLinkedIn}  ${personal_information.linkedin}`,
+        `${personal_information.labelWeb}  ${personal_information.web}`,
+        ``,
+        `${personal_information.labelCard}  ${personal_information.npx}`,
+      ].join('\n'),
+      {
+        margin: 1,
+        float: 'center',
+        padding: 1,
+        borderStyle: 'round',
+        borderColor: '#97ce4c',
+        backgroundColor: '#171421'
+      }
+    );
+    boxen_images.push(last_slide)
     printFrames(boxen_images, 3000)
 }
 main()
