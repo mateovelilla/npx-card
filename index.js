@@ -166,8 +166,8 @@ async function main() {
     printFrames(boxen_images, 3000)
 }
 // main()
-async function asyncprintVideo() {
-  const folder_frames = fs.readdirSync(path.resolve(__dirname, './frames/samurai_jack'))
+async function asyncprintVideo(frames_path) {
+  const folder_frames = fs.readdirSync(path.resolve(__dirname, frames_path))
   const file = fs.createWriteStream('movie.txt',{
     flags: 'a+',
   })
@@ -175,7 +175,7 @@ async function asyncprintVideo() {
     const frame = await Jimp.read(
       path.resolve(
       __dirname,
-      './frames/samurai_jack/',
+      frames_path,
       img
       )
     )
@@ -188,4 +188,12 @@ async function asyncprintVideo() {
   printFrames(movie_splitting, 50)
   console.log("finished!")
 }
-asyncprintVideo()
+if (process.argv[2]) {
+  if(process.argv[2] === "--video=samurai") {
+    asyncprintVideo('./frames/samurai_jack')
+  } else {
+    asyncprintVideo('./frames/rick_and_morty')
+  }
+} else {
+  main()
+}
