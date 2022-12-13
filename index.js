@@ -1,7 +1,8 @@
 'use strict'
 const path = require('path')
 const fs = require('fs');
-const util = require('util')
+const os = require('os')
+const { execSync } = require('child_process')
 const {setTimeout: timerPromise } = require('timers/promises');
 const Jimp = require('jimp');
 const boxen = require('boxen');
@@ -84,13 +85,13 @@ async function printFrames(frames, time) {
         await timerPromise(time, 'exmaple')
     }
 }
-async function main() {
-    const images = fs.readdirSync(path.resolve(__dirname, './imgs/languages'))
+async function card(path_to_work) {
+    const images = fs.readdirSync(path.resolve(path_to_work, './imgs/languages'))
     const images_processed= []
-    for await (const image of images) {
+    for  (const image of images) {
         const image_read = await Jimp.read(
             path.resolve(
-            __dirname,
+              path_to_work,
             './imgs/languages/',
             image
             )
@@ -163,37 +164,61 @@ async function main() {
       }
     );
     boxen_images.push(last_slide)
-    printFrames(boxen_images, 3000)
+    await printFrames(boxen_images, 3000)
 }
-// main()
 async function asyncprintVideo(frames_path) {
-  const folder_frames = fs.readdirSync(path.resolve(__dirname, frames_path))
-  const file = fs.createWriteStream('movie.txt',{
+  const folder_frames = fs.readdirSync(frames_path)
+  const file = fs.createWriteStream(path.resolve(frames_path, 'movie.txt'),{
     flags: 'a+',
   })
   for await (const img of folder_frames) {
     const frame = await Jimp.read(
       path.resolve(
-      __dirname,
       frames_path,
       img
       )
-    )
+    ) 
     const frame_resize = frame.resize(process.stdout.columns - 5,process.stdout.rows - 5)
     const frame_convert_to_ascci = convertImageToAscii(frame_resize)
     file.write('break - line' + frame_convert_to_ascci.join(""))
   }
-  const movie = fs.readFileSync(path.resolve(__dirname, 'movie.txt'))
+  const movie = fs.readFileSync(path.resolve(frames_path, 'movie.txt'))
   const movie_splitting = movie.toString().split('break - line')
-  printFrames(movie_splitting, 50)
-  console.log("finished!")
+  await printFrames(movie_splitting, 30)
 }
-if (process.argv[2]) {
-  if(process.argv[2] === "--video=samurai") {
-    asyncprintVideo('./frames/samurai_jack')
-  } else {
-    asyncprintVideo('./frames/rick_and_morty')
+function deleteFolderRecursive (path) {
+  if( fs.existsSync(path) ) {
+    fs.readdirSync(path).forEach(function(file,index){
+      var curPath = path + "/" + file;
+      if(fs.statSync(curPath).isDirectory()) { // recurse
+        deleteFolderRecursive(curPath);
+      } else { // delete file
+        fs.unlinkSync(curPath);
+      }
+    });
+    fs.rmdirSync(path);
   }
-} else {
-  main()
 }
+async function main(){
+  const tempdir = os.tmpdir()
+  if(!fs.existsSync(path.resolve(tempdir,'./npx-card'))) {
+    execSync(
+      `git clone https://github.com/mateovelilla/npx-card.git`,
+      {
+        cwd: tempdir
+      }
+    )
+  }
+  if (process.argv[2]) {
+    if(process.argv[2] === "--video=samurai") {
+      await asyncprintVideo(path.resolve(tempdir, './npx-card/frames/samurai_jack' ))
+  
+    } else {
+      await asyncprintVideo(path.resolve(tempdir, './npx-card/frames/rick_and_morty' ))
+    }
+  } else {
+    await card(path.resolve(tempdir,'npx-card'))
+  }
+  if(fs.existsSync(path.resolve(tempdir,'./npx-card'))) deleteFolderRecursive(path.resolve(tempdir, './npx-card'))
+}
+main()
