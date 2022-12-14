@@ -2,8 +2,8 @@
   "name": "mateovelilla",
   "version": "1.2.0",
   "description": "Just A Personal Card for Mateo Velilla Ospina (mateovelilla)",
-  "main": "card.js",
-  "bin": "./card.js",
+  "main": "index.js",
+  "bin": "./index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
