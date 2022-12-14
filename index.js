@@ -4,11 +4,12 @@ const path = require('path')
 const fs = require('fs');
 const os = require('os')
 const { execSync } = require('child_process')
-const {setTimeout: timerPromise } = require('timers/promises');
+const { setInterval: setIntervalPromise, setTimeout: timerPromise } = require('timers/promises');
 const Jimp = require('jimp');
 const boxen = require('boxen');
 const clear = require('clear');
 const chalk = require('chalk');
+const cliSpinners = require('cli-spinners');
 const chars = [" ", " ", ".", ":", "!", "+", "*", "e", "$", "@", "8"];
 const color = true;
 const data = {
@@ -167,11 +168,15 @@ async function card(path_to_work) {
     boxen_images.push(last_slide)
     await printFrames(boxen_images, 3000)
 }
-async function asyncprintVideo(frames_path) {
+async function asyncPrintVideo(frames_path) {
+  
   const folder_frames = fs.readdirSync(frames_path)
   const file = fs.createWriteStream(path.resolve(frames_path, 'movie.txt'),{
     flags: 'a+',
   })
+  const ac = new AbortController();
+  const { signal } = ac;
+  loader('Loading frames....', signal)
   for await (const img of folder_frames) {
     const frame = await Jimp.read(
       path.resolve(
@@ -183,43 +188,89 @@ async function asyncprintVideo(frames_path) {
     const frame_convert_to_ascci = convertImageToAscii(frame_resize)
     file.write('break - line' + frame_convert_to_ascci.join(""))
   }
+  ac.abort()
   const movie = fs.readFileSync(path.resolve(frames_path, 'movie.txt'))
-  const movie_splitting = movie.toString().split('break - line')
+  const movie_splitting = movie.toString().split('break - line') 
   await printFrames(movie_splitting, 30)
 }
 function deleteFolderRecursive (path) {
   if( fs.existsSync(path) ) {
     fs.readdirSync(path).forEach(function(file,index){
       var curPath = path + "/" + file;
-      if(fs.statSync(curPath).isDirectory()) { // recurse
+      if(fs.statSync(curPath).isDirectory()) {
         deleteFolderRecursive(curPath);
-      } else { // delete file
+      } else {
         fs.unlinkSync(curPath);
       }
     });
     fs.rmdirSync(path);
   }
 }
+async function loader(message, signal) {
+  try {
+    const loader_spinner = cliSpinners.bouncingBall.frames;
+    let count = 0;
+    for await (const timer of setIntervalPromise(90, 'Hola', { signal }) ) {
+      clear()
+      if (count < loader_spinner.length - 1) {
+        count++;
+        const frameToPrint = framesInTheBox(
+          chalk.hex('#97ce4c').bold(message + loader_spinner[count]),
+          new Array(process.stdout.rows - 4).fill(
+            new Array(process.stdout.columns).fill(' ').join('') +
+            '\n'
+          ).join('')
+        )
+        console.log(frameToPrint)
+      }else {
+        count = 0;
+      }
+    }
+  } catch (error) {
+    return false
+  }
+}
+
 async function main(){
+  clear()
   const tempdir = os.tmpdir()
   if(!fs.existsSync(path.resolve(tempdir,'./npx-card'))) {
+    const ac = new AbortController();
+    const { signal } = ac;
+    loader('Downloading repo....', signal)
     execSync(
       `git clone https://github.com/mateovelilla/npx-card.git`,
       {
         cwd: tempdir
       }
     )
+    ac.abort()
   }
   if (process.argv[2]) {
     if(process.argv[2] === "--video=samurai") {
-      await asyncprintVideo(path.resolve(tempdir, './npx-card/frames/samurai_jack' ))
+      await asyncPrintVideo(path.resolve(tempdir, './npx-card/frames/samurai_jack' ))
   
     } else {
-      await asyncprintVideo(path.resolve(tempdir, './npx-card/frames/rick_and_morty' ))
+      await asyncPrintVideo(path.resolve(tempdir, './npx-card/frames/rick_and_morty' ))
     }
   } else {
     await card(path.resolve(tempdir,'npx-card'))
   }
   if(fs.existsSync(path.resolve(tempdir,'./npx-card'))) deleteFolderRecursive(path.resolve(tempdir, './npx-card'))
+}
+
+function framesInTheBox(title,content) {
+  return boxen(
+    content,
+    {
+        title: title,
+        titleAlignment: 'center',
+        margin: 0,
+        padding: 0,
+        borderStyle: 'round',
+        borderColor: '#97ce4c',
+        backgroundColor: '#171421'
+    }
+  )
 }
 main()
