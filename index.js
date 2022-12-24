@@ -7,7 +7,6 @@ const { execSync } = require('child_process')
 const { setInterval: setIntervalPromise, setTimeout: timerPromise } = require('timers/promises');
 const Jimp = require('jimp');
 const boxen = require('boxen');
-const clear = require('clear');
 const chalk = require('chalk');
 const cliSpinners = require('cli-spinners');
 const chars = [" ", " ", ".", ":", "!", "+", "*", "e", "$", "@", "8"];
@@ -87,6 +86,7 @@ async function printFrames(frames, time) {
         await timerPromise(time, 'exmaple')
     }
 }
+
 async function card(path_to_work) {
     const images = fs.readdirSync(path.resolve(path_to_work, './imgs/languages'))
     const images_processed= []
@@ -258,7 +258,13 @@ async function main(){
   }
   if(fs.existsSync(path.resolve(tempdir,'./npx-card'))) deleteFolderRecursive(path.resolve(tempdir, './npx-card'))
 }
-
+async function clear() {
+  if (process.platform === 'linux' || process.platform === 'darwin') {
+    process.stdout.write('\x1b[2J')
+  }else {
+    execSync('cls')
+  }
+}
 function framesInTheBox(title,content) {
   return boxen(
     content,
